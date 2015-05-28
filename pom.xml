@@ -67,12 +67,6 @@
                 </processfast-storage-foundationdb.build.finalname>
             </properties>
 
-            <distributionManagement>
-                <repository>
-                    <id>repo.tag.snapshot</id>
-                    <url>http://repo.hlt.isti.cnr.it:8081/nexus/content/repositories/snapshots</url>
-                </repository>
-            </distributionManagement>
         </profile>
         <profile>
             <id>release</id>
@@ -85,12 +79,6 @@
                 <processfast-storage-foundationdb.build.finalname>${project.name}-${processfast-storage-foundationdb.build.generateversion}
                 </processfast-storage-foundationdb.build.finalname>
             </properties>
-            <distributionManagement>
-                <repository>
-                    <id>repo.tag.release</id>
-                    <url>http://repo.hlt.isti.cnr.it:8081/nexus/content/repositories/releases</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 
