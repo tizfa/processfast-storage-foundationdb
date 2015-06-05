@@ -13,10 +13,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-all:2.4.2" level="project" />
-    <orderEntry type="library" name="Maven: it.cnr.isti.hlt:processfast-api:0.9-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="processfast-api" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.7" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: it.cnr.isti.hlt:processfast-api:test-jar:tests:0.9-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="processfast-api" scope="TEST" production-on-test="" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" name="Maven: com.foundationdb:fdb-java:3.0.2" level="project" />
