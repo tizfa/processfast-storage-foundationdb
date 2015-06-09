@@ -18,11 +18,14 @@
 
 package it.cnr.isti.hlt.processfast_storage_foundationdb
 
+import groovy.transform.CompileStatic
+
 /**
  * An utils class for I/O methods.
  *
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  */
+@CompileStatic
 class IOUtils {
 
     /**

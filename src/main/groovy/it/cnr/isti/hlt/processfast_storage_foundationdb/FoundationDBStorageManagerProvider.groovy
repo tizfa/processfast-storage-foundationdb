@@ -20,6 +20,7 @@ package it.cnr.isti.hlt.processfast_storage_foundationdb
 
 import com.foundationdb.Database
 import com.foundationdb.FDB
+import groovy.transform.CompileStatic
 import it.cnr.isti.hlt.processfast.data.StorageManager
 import it.cnr.isti.hlt.processfast.data.StorageManagerProvider
 
@@ -29,6 +30,7 @@ import it.cnr.isti.hlt.processfast.data.StorageManagerProvider
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  * @since 1.0.0
  */
+@CompileStatic
 class FoundationDBStorageManagerProvider implements StorageManagerProvider {
 
     FDB fdb;
@@ -86,6 +88,8 @@ class FoundationDBStorageManagerProvider implements StorageManagerProvider {
      * @return The FoundationDB storage path
      */
     List<String> getFoundationDBStoragePath() {
-        mainDirectoryPath.split("/").grep{it.length() != 0}.toList()
+        mainDirectoryPath.split("/").grep { String it ->
+            it.length() != 0
+        }.toList()
     }
 }

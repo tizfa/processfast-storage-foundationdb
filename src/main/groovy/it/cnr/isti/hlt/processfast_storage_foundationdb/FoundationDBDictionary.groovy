@@ -18,6 +18,7 @@
 
 package it.cnr.isti.hlt.processfast_storage_foundationdb
 
+import groovy.transform.CompileStatic
 import it.cnr.isti.hlt.processfast.data.Dictionary
 
 /**
@@ -26,6 +27,7 @@ import it.cnr.isti.hlt.processfast.data.Dictionary
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  * @since 1.0.0
  */
+//@CompileStatic
 class FoundationDBDictionary implements Dictionary {
 
     /**

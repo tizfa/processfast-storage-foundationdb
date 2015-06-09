@@ -18,20 +18,15 @@
 
 package it.cnr.isti.hlt.processfast_storage_foundationdb
 
-import com.foundationdb.KeySelector
 import com.foundationdb.KeyValue
 import com.foundationdb.Transaction
 import com.foundationdb.TransactionContext
 import com.foundationdb.async.Function
 import com.foundationdb.directory.DirectoryLayer
 import com.foundationdb.tuple.Tuple
-import it.cnr.isti.hlt.processfast.data.Array
-import it.cnr.isti.hlt.processfast.data.ArrayDataSourceIteratorProvider
-import it.cnr.isti.hlt.processfast.data.ArrayIterator
-import it.cnr.isti.hlt.processfast.data.ArrayPairDataSourceIteratorProvider
-import it.cnr.isti.hlt.processfast.data.ImmutableDataSourceIteratorProvider
+import groovy.transform.CompileStatic
+import it.cnr.isti.hlt.processfast.data.*
 import it.cnr.isti.hlt.processfast.utils.Pair
-
 
 /**
  * An array implementation based on FoundationDB.
@@ -39,9 +34,10 @@ import it.cnr.isti.hlt.processfast.utils.Pair
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  * @since 1.0.0
  */
+//@CompileStatic
 class FoundationDBArray<T extends Serializable> implements Array<T> {
 
-    class CachedItem<T> {
+    static class CachedItem<T> {
         T value
         boolean modified
     }
@@ -84,7 +80,7 @@ class FoundationDBArray<T extends Serializable> implements Array<T> {
     }
 
     List<String> getArrayPath() {
-        return [storage.getStoragePath(), storage.computeArrayName(name)].flatten()
+        return (List<String>) [storage.getStoragePath(), storage.computeArrayName(name)].flatten()
     }
 
     @Override
@@ -140,7 +136,7 @@ class FoundationDBArray<T extends Serializable> implements Array<T> {
             def range = tr.getRange(storagesDir.pack(computeItem(fromIndex)), storagesDir.pack(computeItem(to)))
             for (KeyValue kv : range) {
                 long curIndex = Tuple.fromBytes(kv.getKey()).getLong(2);
-                def v = IOUtils.fromByteArray(kv.getValue())
+                T v = IOUtils.fromByteArray(kv.getValue())
                 if (NULL_VALUE.equals(v))
                     v = null
                 values.set((int) curIndex-fromIndex, v)
@@ -367,7 +363,7 @@ class FoundationDBArray<T extends Serializable> implements Array<T> {
 
     @Override
     Iterator<T> asIterator(long numBufferedItems) {
-        return new ArrayIterator<T>(this, numBufferedItems)
+        return (Iterator<T>) new ArrayIterator<T>(this, numBufferedItems)
     }
 
     @Override
@@ -540,7 +536,7 @@ class FoundationDBArray<T extends Serializable> implements Array<T> {
             long index = iter.next()
             def item = toUpdate.get(index)
             enableLocalCache(false, index, index+1)
-            setValue(index, item.value)
+            setValue(index, (T) item.value)
             enableLocalCache(true, index, index+1)
         }
     }

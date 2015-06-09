@@ -18,6 +18,7 @@
 
 package it.cnr.isti.hlt.processfast_storage_foundationdb
 
+import groovy.transform.CompileStatic
 import it.cnr.isti.hlt.processfast.data.ReadableDictionary
 import it.cnr.isti.hlt.processfast.data.StorageManager
 import it.cnr.isti.hlt.processfast.data.StorageManagerAtomicContext
@@ -25,6 +26,7 @@ import it.cnr.isti.hlt.processfast.data.StorageManagerAtomicContext
 /**
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  */
+@CompileStatic
 class FoundationDBStorageManagerAtomicContext implements  StorageManagerAtomicContext {
 
     final FoundationDBStorageManager storageManager

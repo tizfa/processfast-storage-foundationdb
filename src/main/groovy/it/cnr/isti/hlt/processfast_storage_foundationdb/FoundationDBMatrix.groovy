@@ -25,6 +25,7 @@ import com.foundationdb.TransactionContext
 import com.foundationdb.async.Function
 import com.foundationdb.directory.DirectoryLayer
 import com.foundationdb.tuple.Tuple
+import groovy.transform.CompileStatic
 import it.cnr.isti.hlt.processfast.data.DataIterable
 import it.cnr.isti.hlt.processfast.data.ImmutableDataSourceIteratorProvider
 import it.cnr.isti.hlt.processfast.data.Matrix
@@ -36,9 +37,10 @@ import it.cnr.isti.hlt.processfast.utils.Pair
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  * @since 1.0.0
  */
+//@CompileStatic
 class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
 
-    class CachedItem<T> {
+    static class CachedItem<T> {
         T value
         boolean modified
     }
@@ -75,8 +77,7 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
             throw new IllegalArgumentException("The number of rows is less than 1")
 
         // Resize the matrix to requested getNumCols.
-        resize(numRows)
-        resizeColumns(numCols)
+        resize(numRows, numCols)
     }
 
 
@@ -90,13 +91,12 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
         this.name = matrixName
 
         // Create an empty matrix.
-        resize(0,)
-        resizeColumns(0)
+        resize(0, 0)
     }
 
 
     List<String> getMatrixPath() {
-        return [storage.getStoragePath(), storage.computeMatrixName(name)].flatten()
+        return (List<String>) [storage.getStoragePath(), storage.computeMatrixName(name)].flatten()
     }
 
 
@@ -142,7 +142,7 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
 
     @Override
     void resize(long numRows, long numCols) {
-        resize(storage.storageManager.tc, numRows)
+        this.resize(storage.storageManager.tc, numRows, numCols)
     }
 
 
@@ -248,7 +248,7 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
                 throw new IllegalArgumentException("The requested row index is not valid. Min index: 0, Max index: ${numRows - 1}, Requested index: ${row}")
             long numCols = getNumCols(tr)
             if (column < 0 || column >= numCols)
-                throw new IllegalArgumentException("The requested column index is not valid. Min index: 0, Max index: ${numCols - 1}, Requested index: ${col}")
+                throw new IllegalArgumentException("The requested column index is not valid. Min index: 0, Max index: ${numCols - 1}, Requested index: ${column}")
 
             DirectoryLayer dir = new DirectoryLayer()
             def storagesDir = dir.open(tr, getMatrixPath()).get()
@@ -344,14 +344,14 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
                 def v = IOUtils.fromByteArray(kv.getValue())
                 if (NULL_VALUE.equals(v))
                     v = null
-                values.set((int) c-startCol, v)
+                values.set((int) c - startCol, (T) v)
             }
         } as Function)
 
         synchronized (cache) {
             def iter = cache.keySet().iterator()
             while (iter.hasNext()) {
-                long index = iter.next()
+                String index = iter.next()
                 T value = cache.get(index).value
                 long r = Long.parseLong(index.split("_")[0])
                 long c = Long.parseLong(index.split("_")[1])
@@ -398,14 +398,14 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
                 def v = IOUtils.fromByteArray(kv.getValue())
                 if (NULL_VALUE.equals(v))
                     v = null
-                values.set((int) r-startRow, v)
+                values.set((int) r - startRow, (T) v)
             }
         } as Function)
 
         synchronized (cache) {
             def iter = cache.keySet().iterator()
             while (iter.hasNext()) {
-                long index = iter.next()
+                String index = iter.next()
                 T value = cache.get(index).value
                 long r = Long.parseLong(index.split("_")[0])
                 long c = Long.parseLong(index.split("_")[1])
@@ -485,7 +485,7 @@ class FoundationDBMatrix<T extends Serializable> implements Matrix<T> {
             long col = Long.parseLong(index.split("_")[1])
             def item = toUpdate.get(index)
             enableLocalCache(false, row, row + 1, col, col + 1)
-            setValue(row, col, item.value)
+            setValue(row, col, (T) item.value)
             enableLocalCache(true, row, row + 1, col, col + 1)
         }
     }

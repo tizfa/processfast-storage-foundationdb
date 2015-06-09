@@ -25,6 +25,7 @@ import com.foundationdb.async.Function
 import com.foundationdb.async.ReadyFuture
 import com.foundationdb.directory.DirectoryLayer
 import com.foundationdb.tuple.Tuple
+import groovy.transform.CompileStatic
 import it.cnr.isti.hlt.processfast.connector.FutureValuePromise
 import it.cnr.isti.hlt.processfast.connector.ValuePromise
 import it.cnr.isti.hlt.processfast.data.*
@@ -35,6 +36,7 @@ import java.util.concurrent.Future
  * @author Tiziano Fagni (tiziano.fagni@isti.cnr.it)
  * @since 1.0.0
  */
+//@CompileStatic
 class FoundationDBStorageManager implements StorageManager {
 
     final static String STORAGE_LIST = "storageList"
@@ -76,7 +78,7 @@ class FoundationDBStorageManager implements StorageManager {
             throw new NullPointerException("The transaction context is 'null'")
         return tc.run({ tr ->
             DirectoryLayer dir = new DirectoryLayer()
-            def storageDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storageDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             def storageList = storageDir.subspace(Tuple.from(STORAGE_LIST))
             List<String> storageNames = new ArrayList<String>();
             for(KeyValue kv: tr.getRange(storageList.range())) {
@@ -100,7 +102,7 @@ class FoundationDBStorageManager implements StorageManager {
 
         return tc.run({ tr ->
             DirectoryLayer dir = new DirectoryLayer()
-            def storageDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storageDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             def storageList = storageDir.subspace(Tuple.from(STORAGE_LIST))
             def val = tr.get(storageList.pack(Tuple.from(name))).get()
             if (val == null)
@@ -125,7 +127,7 @@ class FoundationDBStorageManager implements StorageManager {
         def storageManager = this
         return db.run({ Transaction tr ->
             DirectoryLayer dir = new DirectoryLayer()
-            def storagesDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storagesDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             def storageList = storagesDir.subspace(Tuple.from(STORAGE_LIST))
             tr.set(storageList.pack(Tuple.from(name)), Tuple.from(name).pack())
             storagesDir.createOrOpen(tr, [name]).get()
@@ -148,7 +150,7 @@ class FoundationDBStorageManager implements StorageManager {
         DirectoryLayer dir = new DirectoryLayer()
         def storageManager = this
         db.run( { Transaction tr ->
-            def storagesDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storagesDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             def storageList = storagesDir.subspace(Tuple.from(STORAGE_LIST))
             tr.clear(storageList.pack(Tuple.from(name)))
             storagesDir.removeIfExists(tr, [name]).get()
@@ -164,7 +166,7 @@ class FoundationDBStorageManager implements StorageManager {
         def storageManager = this
         return tc.run({ Transaction tr ->
             DirectoryLayer dir = new DirectoryLayer()
-            def storagesDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storagesDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             def storageList = storagesDir.subspace(Tuple.from(STORAGE_LIST))
             def ret = tr.get(storageList.pack(Tuple.from(name))).get()
             if (ret == null)
@@ -193,11 +195,11 @@ class FoundationDBStorageManager implements StorageManager {
         if (operations == null)
             throw new NullPointerException("The set of atomic operations is 'null'")
 
-        Future<Void> future = tc.runAsync { Transaction tr ->
+        Future<Void> future = (Future<Void>) tc.runAsync({ Transaction tr ->
             FoundationDBStorageManager manager = new FoundationDBStorageManager(provider, tr, clientID)
-            operations.call(new FoundationDBStorageManagerAtomicContext(this), inputData)
+            operations.call(new FoundationDBStorageManagerAtomicContext(manager, inputData))
             return ReadyFuture.DONE
-        }
+        } as Function)
 
         return new FutureValuePromise<Void>(future)
     }
@@ -214,11 +216,11 @@ class FoundationDBStorageManager implements StorageManager {
         if (operations == null)
             throw new NullPointerException("The set of atomic operations is 'null'")
 
-        Future<ReadableDictionary> future = tc.runAsync { Transaction tr ->
+        Future<ReadableDictionary> future = (Future<ReadableDictionary>) tc.runAsync({ Transaction tr ->
             FoundationDBStorageManager manager = new FoundationDBStorageManager(provider, tr, clientID)
-            def retDict = operations.call(new FoundationDBStorageManagerAtomicContext(this), inputData)
+            def retDict = operations.call(new FoundationDBStorageManagerAtomicContext(manager, inputData))
             return new ReadyFuture<ReadableDictionary>(retDict)
-        }
+        } as Function)
 
         return new FutureValuePromise<ReadableDictionary>(future)
     }
@@ -236,9 +238,9 @@ class FoundationDBStorageManager implements StorageManager {
     void clear(TransactionContext tc) {
         tc.run({ tr ->
             DirectoryLayer dir = new DirectoryLayer()
-            def storageDir = dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            def storageDir = dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
             storageDir.removeIfExists(tr).get()
-            dir.createOrOpen(tr, [provider.getFoundationDBStoragePath()].flatten()).get()
+            dir.createOrOpen(tr, (List<String>) [provider.getFoundationDBStoragePath()].flatten()).get()
         } as Function)
     }
 }
