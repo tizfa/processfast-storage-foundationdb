@@ -188,47 +188,6 @@ class FoundationDBStorageManager implements StorageManager {
 
     }
 
-    @Override
-    ValuePromise<Void> atomic(ReadableDictionary inputData, AtomicOperationsSet operations) {
-        if (inputData == null)
-            throw new NullPointerException("The set of input data is 'null'")
-        if (operations == null)
-            throw new NullPointerException("The set of atomic operations is 'null'")
-
-        Future<Void> future = (Future<Void>) tc.runAsync({ Transaction tr ->
-            FoundationDBStorageManager manager = new FoundationDBStorageManager(provider, tr, clientID)
-            operations.call(new FoundationDBStorageManagerAtomicContext(manager, inputData))
-            return ReadyFuture.DONE
-        } as Function)
-
-        return new FutureValuePromise<Void>(future)
-    }
-
-    @Override
-    ValuePromise<Void> atomic(AtomicOperationsSet operations) {
-        return atomic(new RamDictionary(), operations)
-    }
-
-    @Override
-    ValuePromise<ReadableDictionary> atomicGet(ReadableDictionary inputData, AtomicGetOperationsSet operations) {
-        if (inputData == null)
-            throw new NullPointerException("The set of input data is 'null'")
-        if (operations == null)
-            throw new NullPointerException("The set of atomic operations is 'null'")
-
-        Future<ReadableDictionary> future = (Future<ReadableDictionary>) tc.runAsync({ Transaction tr ->
-            FoundationDBStorageManager manager = new FoundationDBStorageManager(provider, tr, clientID)
-            def retDict = operations.call(new FoundationDBStorageManagerAtomicContext(manager, inputData))
-            return new ReadyFuture<ReadableDictionary>(retDict)
-        } as Function)
-
-        return new FutureValuePromise<ReadableDictionary>(future)
-    }
-
-    @Override
-    ValuePromise<ReadableDictionary> atomicGet(AtomicGetOperationsSet operations) {
-        return atomicGet(new RamDictionary(), operations)
-    }
 
     @Override
     void clear() {
